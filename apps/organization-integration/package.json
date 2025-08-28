@@ -1,0 +1,26 @@
+{
+  "name": "@org/organization-integration",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@org/organization"
+    ],
+    "targets": {
+      "integration": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/organization-integration/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@org/organization:build",
+          "@org/organization:serve"
+        ]
+      }
+    }
+  }
+}
