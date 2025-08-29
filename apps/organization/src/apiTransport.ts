@@ -8,7 +8,7 @@ interface ApiRequest {
 interface ServiceResponse {
   status?: number,
   data: object,
-  headers: Record<string, string | string[] | undefined>,
+  headers?: Record<string, string | string[] | undefined>,
 }
 
 interface ApiResponse {
