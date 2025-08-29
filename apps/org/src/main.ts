@@ -4,7 +4,7 @@ import type { AppOrganization, AppOrganizationMembership, DB } from './types/db'
 import { Pool } from 'pg';
 
 const host = process.env.HOST ?? 'localhost';
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;3
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 const app = express();
 app.use(express.json())
