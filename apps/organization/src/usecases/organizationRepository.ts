@@ -1,7 +1,6 @@
 import { Database } from '../db';
-import { AppOrganizationMembership, DB } from '../generated/db/db';
+import { AppOrganization, AppOrganizationMembership, DB } from '../generated/db/db';
 import { Selectable, Transaction } from 'kysely';
-import type { AppOrganization } from '@org/org/src/types/db';
 
 class OrganizationRepository {
   private readonly db: Database;
