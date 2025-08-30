@@ -4,10 +4,9 @@ import { CreateOrganizationResponse } from './createOrganizationResponse';
 import slugify from 'slugify';
 import { generateShortId } from './shortIdGenerator';
 
-
 class CreateOrganizationUseCase {
   private static readonly MAX_ATTEMPTS_TO_APPEND_UNIQUE_ID_TO_ORGANIZATION_SLUG = 10;
-  private static readonly MAX_ORGANIZATION_NAME_LENGTH = 10;
+  private static readonly MAX_ORGANIZATION_NAME_LENGTH = 32;
 
   private readonly organizationRepository: OrganizationRepository;
 
@@ -16,22 +15,22 @@ class CreateOrganizationUseCase {
   }
 
   createOrganization = async (req: CreateOrganizationRequest): Promise<CreateOrganizationResponse> => {
-    let org;
+    let organization;
     if (await this.organizationRepository.doesUserHaveADefaultOrganization(req.body.userId)) {
-      org = await this.createAdditionalOrganization(req);
+      organization = await this.createAdditionalOrganization(req);
     } else {
-      console.log('User does not have a default organization');
+      organization = await this.createDefaultOrganization(req);
     }
 
-    if (!org) {
+    if (!organization) {
       throw Error('Failed to create organization');
     }
 
     return {
       data: {
-        id: org.organization_id as string,
+        id: organization.organization_id as string
       }
-    }
+    };
   };
 
   private createAdditionalOrganization = async (req: CreateOrganizationRequest) => {
@@ -39,41 +38,50 @@ class CreateOrganizationUseCase {
       throw Error('Organization name must be provided for creating a non-default organizations');
     }
 
-    const orgName = this.createOrganizationName(req.body.name);
-    const uniqueOrgSlug = await this.createUniqueOrganizationSlug(orgName);
+    const organizationName = this.createOrganizationName(req.body.name);
+    const organizationSlug = await this.createUniqueOrganizationSlug(organizationName);
 
-    return this.organizationRepository.createOrganization(req.body.userId, orgName, uniqueOrgSlug, req.body.description, false);
+    return this.organizationRepository.createOrganization(req.body.userId, organizationName, organizationSlug, req.body.description, false);
   };
+
+  private createDefaultOrganization = async (req: CreateOrganizationRequest) => {
+    // TODO: Fetch user name from user service
+    const userName = "DeezNutsInYourMouth";
+    const organizationName = this.createDefaultOrganizationName(userName);
+    const organizationSlug = await this.createUniqueOrganizationSlug(organizationName);
+
+    return this.organizationRepository.createOrganization(req.body.userId, organizationName, organizationSlug, req.body.description, true);
+  }
 
   private createOrganizationName = (orgName: string): string => {
     if (orgName.length > CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH) {
-      const excessLength = orgName.length -  CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH;
+      const excessLength = orgName.length - CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH;
       return orgName.substring(0, orgName.length - excessLength);
     }
     return orgName;
   };
 
-  // private createDefaultOrganizationName = (userName: string): string => {
-  //   let orgName = `${userName}'s Organization`;
-  //   if (orgName.length >  CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH) {
-  //     const excessLength = orgName.length -  CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH;
-  //     orgName = `${userName.substring(0, userName.length - excessLength)}'s Organization`;
-  //   }
-  //   return orgName;
-  // };
+  private createDefaultOrganizationName = (userName: string): string => {
+    let orgName = `${userName}'s Organization`;
+    if (orgName.length >  CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH) {
+      const excessLength = orgName.length -  CreateOrganizationUseCase.MAX_ORGANIZATION_NAME_LENGTH;
+      orgName = `${userName.substring(0, userName.length - excessLength)}'s Organization`;
+    }
+    return orgName;
+  };
 
   private createUniqueOrganizationSlug = async (organizationName: string): Promise<string> => {
-    const defaultSlug = this.createOrganizationSlug(organizationName);
+    const defaultSlug = this.slugify(organizationName);
     if (!await this.organizationRepository.doesOrganizationSlugExist(defaultSlug)) {
       return defaultSlug;
     }
     return await this.appendUniqueIdToOrganizationSlug(defaultSlug);
   };
 
-  private appendUniqueIdToOrganizationSlug = async (defaultOrganizationSlug: string): Promise<string> => {
+  private appendUniqueIdToOrganizationSlug = async (organizationSlug: string): Promise<string> => {
     for (let attempt = 0; attempt < CreateOrganizationUseCase.MAX_ATTEMPTS_TO_APPEND_UNIQUE_ID_TO_ORGANIZATION_SLUG; attempt++) {
       const shortId = generateShortId();
-      const updatedOrganizationSlug = slugify(`${defaultOrganizationSlug}-${shortId}`, { lower: true, strict: true });
+      const updatedOrganizationSlug = this.slugify(`${organizationSlug}-${shortId}`);
       const exists = await this.organizationRepository.doesOrganizationSlugExist(updatedOrganizationSlug);
       if (!exists) {
         return updatedOrganizationSlug;
@@ -81,11 +89,11 @@ class CreateOrganizationUseCase {
       console.warn(`Generated organization slug already exists, retrying attempt: ${attempt + 1}...`);
     }
     throw new Error(
-      `Failed to generate a unique organization slug after ${CreateOrganizationUseCase.MAX_ATTEMPTS_TO_APPEND_UNIQUE_ID_TO_ORGANIZATION_SLUG} attempts`
+      `Failed to generate a unique organization for ${organizationSlug} slug after ${CreateOrganizationUseCase.MAX_ATTEMPTS_TO_APPEND_UNIQUE_ID_TO_ORGANIZATION_SLUG} attempts`
     );
   };
 
-  createOrganizationSlug = (orgName: string): string => {
+  private slugify = (orgName: string): string => {
     return slugify(orgName, { lower: true, strict: true });
   };
 }

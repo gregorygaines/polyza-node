@@ -3,9 +3,9 @@ import { Database } from './db';
 import { createOrganizationRequestValidatorMiddleware } from './usecases/createOrganizationRequestValidatorMiddleware';
 import { CreateOrganizationUseCase } from './usecases/createOrganizationUseCase';
 import { CreateOrganizationController } from './usecases/createOrganizationController';
-import { apiRequestTransformerMiddleware } from './apiRequestTransformerMiddleware';
+import { apiToServiceRequestTransformerMiddleware } from './middleware/apiToServiceRequestTransformerMiddleware';
 import { OrganizationRepository } from './usecases/organizationRepository';
-import { apiResponseTransformerMiddleware } from './apiResponseTransformerMiddleware';
+import { serviceToapiResponseTransformerMiddleware } from './middleware/serviceToapiResponseTransformerMiddleware';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -13,7 +13,7 @@ const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 const app = express();
 
 app.use(express.json());
-app.use(apiRequestTransformerMiddleware);
+app.use(apiToServiceRequestTransformerMiddleware);
 
 const database = new Database();
 
@@ -26,7 +26,7 @@ app.post('/organization',
   createOrganizationRequestValidatorMiddleware,
   createOrganizationController.handle);
 
-app.use(apiResponseTransformerMiddleware);
+app.use(serviceToapiResponseTransformerMiddleware);
 
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);

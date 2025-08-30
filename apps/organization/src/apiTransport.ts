@@ -1,3 +1,5 @@
+import { Request, Response } from 'express';
+
 interface ApiRequest {
   body: object,
   query: object,
@@ -26,6 +28,14 @@ interface Error {
 interface ErrorDetail {
   field: string,
   issue: string,
+}
+
+export interface ExpressRequestWithApiRequest extends Request {
+  apiRequest: ApiRequest,
+}
+
+export interface ExpressResponseWithServiceResponse extends Response {
+  serviceResponse: ServiceResponse,
 }
 
 export type { ApiRequest, ServiceResponse, ApiResponse };
