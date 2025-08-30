@@ -5,7 +5,7 @@ import { CreateOrganizationUseCase } from './usecases/createOrganizationUseCase'
 import { CreateOrganizationController } from './usecases/createOrganizationController';
 import { apiToServiceRequestTransformerMiddleware } from './middleware/apiToServiceRequestTransformerMiddleware';
 import { OrganizationRepository } from './usecases/organizationRepository';
-import { serviceToapiResponseTransformerMiddleware } from './middleware/serviceToapiResponseTransformerMiddleware';
+import { serviceToApiResponseTransformerMiddleware } from './middleware/serviceToApiResponseTransformerMiddleware';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -26,7 +26,7 @@ app.post('/organization',
   createOrganizationRequestValidatorMiddleware,
   createOrganizationController.handle);
 
-app.use(serviceToapiResponseTransformerMiddleware);
+app.use(serviceToApiResponseTransformerMiddleware);
 
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);

@@ -4,16 +4,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/org-e2e"
-    },
-    {
       "path": "./apps/org"
     },
     {
-      "path": "./apps/organization-e2e"
+      "path": "./apps/organization"
     },
     {
-      "path": "./apps/organization"
+      "path": "./apps/organization-integration"
     }
   ]
 }

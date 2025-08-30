@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ApiResponse, ServiceResponse } from '../apiTransport';
 
-export function serviceToapiResponseTransformerMiddleware(req: Request, res: Response, next: NextFunction) {
+export function serviceToApiResponseTransformerMiddleware(req: Request, res: Response, next: NextFunction) {
   const serviceResponse: ServiceResponse = (res as any).serviceResponse;
 
   if (!serviceResponse) {

@@ -16,7 +16,7 @@ class CreateOrganizationUseCase {
 
   createOrganization = async (req: CreateOrganizationRequest): Promise<CreateOrganizationResponse> => {
     let organization;
-    if (await this.organizationRepository.doesUserHaveADefaultOrganization(req.body.userId)) {
+    if (await this.organizationRepository.doesUserHaveADefaultOrganization(req.headers['x-user-id'])) {
       organization = await this.createAdditionalOrganization(req);
     } else {
       organization = await this.createDefaultOrganization(req);
@@ -41,7 +41,7 @@ class CreateOrganizationUseCase {
     const organizationName = this.createOrganizationName(req.body.name);
     const organizationSlug = await this.createUniqueOrganizationSlug(organizationName);
 
-    return this.organizationRepository.createOrganization(req.body.userId, organizationName, organizationSlug, req.body.description, false);
+    return this.organizationRepository.createOrganization(req.headers['x-user-id'], organizationName, organizationSlug, req.body.description, false);
   };
 
   private createDefaultOrganization = async (req: CreateOrganizationRequest) => {
@@ -50,7 +50,7 @@ class CreateOrganizationUseCase {
     const organizationName = this.createDefaultOrganizationName(userName);
     const organizationSlug = await this.createUniqueOrganizationSlug(organizationName);
 
-    return this.organizationRepository.createOrganization(req.body.userId, organizationName, organizationSlug, req.body.description, true);
+    return this.organizationRepository.createOrganization(req.headers['x-user-id'], organizationName, organizationSlug, req.body.description, true);
   }
 
   private createOrganizationName = (orgName: string): string => {

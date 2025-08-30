@@ -160,7 +160,7 @@ class OrganizationRepository {
 
   private async insertOrganizationMembershipHistoryRecord(
     organizationRecord: Partial<Selectable<AppOrganization>>,
-    organizationMembershipRecord: Selectable<any>,
+    organizationMembershipRecord: Partial<Selectable<AppOrganizationMembership>>,
     tsx: Transaction<DB>
   ) {
     if (!organizationRecord.organization_id) {
@@ -168,6 +168,12 @@ class OrganizationRepository {
     }
     if (!organizationRecord.creator_user_id) {
       throw new Error('Organization record must have a creator_user_id');
+    }
+    if (!organizationMembershipRecord.fk_organization_organization_id) {
+      throw new Error('Organization membership record must have a fk_organization_organization_id');
+    }
+    if (!organizationMembershipRecord.fk_organization_member_role_organization_member_role_id) {
+      throw new Error('Organization membership record must have a fk_organization_member_role_organization_member_role_id');
     }
 
     await tsx
