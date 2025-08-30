@@ -15,6 +15,8 @@ class CreateOrganizationUseCase {
   }
 
   createOrganization = async (req: CreateOrganizationRequest): Promise<CreateOrganizationResponse> => {
+    // TODO: Enforce max number of organizations a user can own
+
     let organization;
     if (await this.organizationRepository.doesUserHaveADefaultOrganization(req.headers['x-user-id'])) {
       organization = await this.createAdditionalOrganization(req);
@@ -32,6 +34,10 @@ class CreateOrganizationUseCase {
       }
     };
   };
+
+  // private getMaxOwnableOrganizations = () => {
+  //   return 5;
+  // }
 
   private createAdditionalOrganization = async (req: CreateOrganizationRequest) => {
     if (!req.body.name) {

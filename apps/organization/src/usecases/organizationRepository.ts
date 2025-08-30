@@ -9,6 +9,15 @@ class OrganizationRepository {
     this.db = db;
   }
 
+  getNumberOfUserOwnedOrganizations = async (userId: string) => {
+    const result = await this.db.getDatabase()
+      .selectFrom('app.organization')
+      .where('creator_user_id', '=', userId)
+      .select(db => db.fn.count<number>('organization_id').as('count'))
+      .executeTakeFirstOrThrow();
+    return Number(result.count);
+  }
+
   doesUserHaveADefaultOrganization = async (userId: string) => {
     return await this.db.getDatabase()
       .selectFrom('app.organization')
