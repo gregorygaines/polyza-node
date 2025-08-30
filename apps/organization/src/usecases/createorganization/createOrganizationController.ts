@@ -1,6 +1,6 @@
 import { CreateOrganizationUseCase } from './createOrganizationUseCase';
 import { NextFunction, Request, Response } from 'express';
-import { ExpressRequestWithApiRequest, ExpressResponseWithServiceResponse } from '../apiTransport';
+import { ExpressRequestWithApiRequest, ExpressResponseWithServiceResponse } from '../../apiTransport';
 import { CreateOrganizationRequest } from './createOrganizationRequest';
 
 class CreateOrganizationController {

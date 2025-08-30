@@ -1,4 +1,5 @@
-import { ApiRequest } from '../apiTransport';
+import { ApiRequest } from '../../apiTransport';
+
 
 interface CreateOrganizationRequest extends ApiRequest {
   body: {

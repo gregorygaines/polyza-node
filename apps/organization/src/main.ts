@@ -1,11 +1,15 @@
 import express from 'express';
 import { Database } from './db';
-import { createOrganizationRequestValidatorMiddleware } from './usecases/createOrganizationRequestValidatorMiddleware';
-import { CreateOrganizationUseCase } from './usecases/createOrganizationUseCase';
-import { CreateOrganizationController } from './usecases/createOrganizationController';
-import { apiToServiceRequestTransformerMiddleware } from './middleware/apiToServiceRequestTransformerMiddleware';
-import { OrganizationRepository } from './usecases/organizationRepository';
-import { serviceToApiResponseTransformerMiddleware } from './middleware/serviceToApiResponseTransformerMiddleware';
+import {
+  apiToServiceRequestTransformerMiddleware,
+  serviceToApiResponseTransformerMiddleware
+} from './middleware';
+import {
+  CreateOrganizationController,
+  createOrganizationRequestValidatorMiddleware,
+  CreateOrganizationUseCase,
+  OrganizationRepository
+} from './usecases/createorganization';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;

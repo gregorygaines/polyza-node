@@ -1,6 +1,6 @@
-import { Database } from '../db';
-import { AppOrganization, AppOrganizationMembership, DB } from '../generated/db/db';
 import { Selectable, Transaction } from 'kysely';
+import { Database } from '../../db';
+import { AppOrganization, AppOrganizationMembership, DB } from '../../generated/db/db';
 
 class OrganizationRepository {
   private readonly db: Database;
