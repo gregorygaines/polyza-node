@@ -7,6 +7,40 @@
   "types": "./dist/index.d.ts",
   "nx": {
     "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "defaultConfiguration": "production",
+        "options": {
+          "platform": "node",
+          "outputPath": "libs/gitea-ts-sdk/dist",
+          "format": [
+            "cjs"
+          ],
+          "bundle": false,
+          "main": "libs/gitea-ts-sdk/src/generated/index.ts",
+          "tsConfig": "libs/gitea-ts-sdk/tsconfig.lib.json",
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
+        "configurations": {
+          "development": {},
+          "production": {
+            "esbuildOptions": {
+              "sourcemap": false,
+              "outExtension": {
+                ".js": ".js"
+              }
+            }
+          }
+        }
+      },
       "generate-gitea-sdk": {
         "executor": "nx:run-commands",
         "options": {
