@@ -11,6 +11,9 @@
     },
     {
       "path": "./apps/organization-integration"
+    },
+    {
+      "path": "./libs/gitea-ts-sdk"
     }
   ]
 }
