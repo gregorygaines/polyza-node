@@ -42,6 +42,6 @@
   },
   "workspaces": [
     "apps/*",
-    "libs/gitea-ts-sdk"
+    "libs/*"
   ]
 }
