@@ -3,6 +3,8 @@ import { OrganizationRepository } from './organizationRepository';
 import { CreateOrganizationResponse } from './createOrganizationResponse';
 import slugify from 'slugify';
 import { generateShortId } from './shortIdGenerator';
+import { AppOrganization } from '../../generated/db/db';
+import { Selectable } from 'kysely';
 
 class CreateOrganizationUseCase {
   private static readonly MAX_ATTEMPTS_TO_APPEND_UNIQUE_ID_TO_ORGANIZATION_SLUG = 10;
@@ -17,7 +19,7 @@ class CreateOrganizationUseCase {
   createOrganization = async (req: CreateOrganizationRequest): Promise<CreateOrganizationResponse> => {
     // TODO: Enforce max number of organizations a user can own
 
-    let organization;
+    let organization: Partial<Selectable<AppOrganization>>;
     if (await this.organizationRepository.doesUserHaveADefaultOrganization(req.headers['x-user-id'])) {
       organization = await this.createAdditionalOrganization(req);
     } else {
@@ -27,10 +29,18 @@ class CreateOrganizationUseCase {
     if (!organization) {
       throw Error('Failed to create organization');
     }
+    if (!organization.name) {
+      throw Error('Created organization is missing a name');
+    }
+    if (!organization.slug) {
+      throw Error('Created organization is missing a slug');
+    }
 
     return {
       data: {
-        id: organization.organization_id as string
+        id: organization.organization_id as string,
+        name: organization.name,
+        slug: organization.slug,
       }
     };
   };
@@ -47,7 +57,7 @@ class CreateOrganizationUseCase {
     const organizationName = this.createOrganizationName(req.body.name);
     const organizationSlug = await this.createUniqueOrganizationSlug(organizationName);
 
-    return this.organizationRepository.createOrganization(req.headers['x-user-id'], organizationName, organizationSlug, req.body.description, false);
+    return this.organizationRepository.createOrganization(req.headers['x-user-id'], organizationName, organizationSlug, /* defaultUserOrganization= */ false);
   };
 
   private createDefaultOrganization = async (req: CreateOrganizationRequest) => {
@@ -56,7 +66,7 @@ class CreateOrganizationUseCase {
     const organizationName = this.createDefaultOrganizationName(userName);
     const organizationSlug = await this.createUniqueOrganizationSlug(organizationName);
 
-    return this.organizationRepository.createOrganization(req.headers['x-user-id'], organizationName, organizationSlug, req.body.description, true);
+    return this.organizationRepository.createOrganization(req.headers['x-user-id'], organizationName, organizationSlug, /* defaultUserOrganization= */ true);
   }
 
   private createOrganizationName = (orgName: string): string => {

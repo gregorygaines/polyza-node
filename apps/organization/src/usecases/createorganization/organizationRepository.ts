@@ -33,16 +33,16 @@ class OrganizationRepository {
       .executeTakeFirst() !== undefined;
   };
 
-  createOrganization = async (creatorUserId: string, name: string, slug: string, description: string | undefined, defaultUserOrganization: boolean): Promise<Partial<Selectable<AppOrganization>>> => {
+  createOrganization = async (creatorUserId: string, name: string, slug: string, defaultUserOrganization: boolean): Promise<Partial<Selectable<AppOrganization>>> => {
     return await this.db.getDatabase().transaction().execute(async tsx => {
-      const organizationRecord = await this.insertOrganizationRecord(creatorUserId, name, slug, defaultUserOrganization, tsx, description);
+      const organizationRecord = await this.insertOrganizationRecord(creatorUserId, name, slug, defaultUserOrganization, tsx);
       await Promise.all([
         this.insertUserAsOrganizationOwner(organizationRecord, tsx).then(orgMembershipRecord => {
           this.insertOrganizationMembershipHistoryRecord(organizationRecord, orgMembershipRecord, tsx);
         }),
         this.insertOrganizationNameHistoryRecord(organizationRecord, name, tsx),
         this.insertOrganizationSlugHistoryRecord(organizationRecord, slug, tsx),
-        this.insertOrganizationDescriptionHistoryRecord(organizationRecord, description, tsx)
+        this.insertOrganizationDescriptionHistoryRecord(organizationRecord, tsx)
       ]);
       return organizationRecord;
     });
@@ -54,7 +54,6 @@ class OrganizationRepository {
     slug: string,
     defaultOrg: boolean,
     tsx: Transaction<DB>,
-    description?: string
   ): Promise<Partial<Selectable<AppOrganization>>> {
     return await tsx
       .insertInto('app.organization')
@@ -62,7 +61,6 @@ class OrganizationRepository {
         creator_user_id: creatorUserId,
         name: name,
         slug: slug,
-        description: description,
         default_user_organization: defaultOrg
       })
       .returningAll()
@@ -146,7 +144,6 @@ class OrganizationRepository {
 
   private async insertOrganizationDescriptionHistoryRecord(
     organizationRecord: Partial<Selectable<AppOrganization>>,
-    description: string | undefined,
     tsx: Transaction<DB>
   ) {
     if (!organizationRecord.organization_id) {
@@ -161,7 +158,6 @@ class OrganizationRepository {
       .values({
         fk_organization_organization_id: organizationRecord.organization_id,
         initiator_user_id: organizationRecord.creator_user_id,
-        description: description
       })
       .execute();
   }

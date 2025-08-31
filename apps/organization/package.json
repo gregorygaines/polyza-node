@@ -5,6 +5,9 @@
   "nx": {
     "targets": {
       "build": {
+        "dependsOn": [
+          "generate-database-types"
+        ],
         "executor": "@nx/esbuild:esbuild",
         "outputs": [
           "{options.outputPath}"
