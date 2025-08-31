@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS app.team_owner_organization
+CREATE TABLE IF NOT EXISTS app.team_owner_organization_history
 (
   team_owner_organization_id      UUID PRIMARY KEY         DEFAULT uuidv7(),
   fk_team_team_id                 UUID                                               NOT NULL REFERENCES app.team (team_id),

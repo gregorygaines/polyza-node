@@ -35,10 +35,13 @@ class CreateOrganizationUseCase {
     if (!organization.slug) {
       throw Error('Created organization is missing a slug');
     }
+    if (!organization.organizationId) {
+      throw Error('Created organization is missing an ID');
+    }
 
     return {
       data: {
-        id: organization.organization_id as string,
+        id: organization.organizationId,
         name: organization.name,
         slug: organization.slug,
       }

@@ -106,7 +106,7 @@
       "generate-database-types": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "kysely-codegen --out-file src/generated/db/db.d.ts",
+          "command": "kysely-codegen --camel-case --out-file src/generated/db/db.d.ts",
           "cwd": "{projectRoot}"
         }
       }

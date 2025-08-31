@@ -1,6 +1,6 @@
 import { config } from "./config";
 import type { DB } from './generated/db/db';
-import { Kysely, PostgresDialect } from 'kysely';
+import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
 
 class Database {
@@ -13,7 +13,8 @@ class Database {
           pool: new Pool({
             connectionString: config.databaseUrl
           })
-        })
+        }),
+        plugins: [new CamelCasePlugin()],
       });
     }
     return Database.instance;

@@ -152,14 +152,6 @@ class OrganizationRepository {
     if (!organizationRecord.creator_user_id) {
       throw new Error('Organization record must have a creator_user_id');
     }
-
-    await tsx
-      .insertInto('app.organization_description_history')
-      .values({
-        fk_organization_organization_id: organizationRecord.organization_id,
-        initiator_user_id: organizationRecord.creator_user_id,
-      })
-      .execute();
   }
 
   private async insertOrganizationMembershipHistoryRecord(

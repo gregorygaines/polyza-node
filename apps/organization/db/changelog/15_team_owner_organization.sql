@@ -4,5 +4,7 @@ CREATE TABLE IF NOT EXISTS app.team_owner_organization
   fk_team_team_id                 UUID                                               NOT NULL REFERENCES app.team (team_id),
   fk_organization_organization_id UUID                                               NOT NULL REFERENCES app.organization (organization_id),
   created_at                      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at                      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+  updated_at                      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  -- Ensures that a team can only have one owner organization.
+  CONSTRAINT unique_team_owner_organization UNIQUE (fk_organization_organization_id, fk_team_team_id)
 );

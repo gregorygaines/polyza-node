@@ -6,7 +6,7 @@ export function createTeamRequestValidatorMiddleware(req: Request, res: Response
   const createTeamRequest: CreateTeamRequest = (req as ExpressRequestWithApiRequest).apiRequest as CreateTeamRequest;
 
   if (!createTeamRequest.headers['x-user-id']) {
-    throw new Error("The CreateOrganizationRequest requires a userId");
+    throw new Error("The CreateTeamRequest requires a userId");
   }
 
   next();
