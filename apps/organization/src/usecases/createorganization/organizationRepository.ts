@@ -154,6 +154,39 @@ class OrganizationRepository {
       .selectAll()
       .executeTakeFirst();
   };
+
+  isUserInOrganization = async (userId: string, organizationId: string): Promise<boolean> => {
+    const membership = await this.db.getDatabase()
+      .selectFrom('app.organizationMembership')
+      .where('memberUserId', '=', userId)
+      .where('fkOrganizationOrganizationId', '=', organizationId)
+      .selectAll()
+      .executeTakeFirst();
+    return membership !== undefined;
+  };
+
+  getUserOrganizationMemberRole = async (userId: string, organizationId: string): Promise<string | null> => {
+    if (!await this.isUserInOrganization(userId, organizationId)) {
+      return null;
+    }
+    const membership = await this.db.getDatabase()
+      .selectFrom('app.organizationMembership')
+      .where('memberUserId', '=', userId)
+      .where('fkOrganizationOrganizationId', '=', organizationId)
+      .selectAll()
+      .executeTakeFirstOrThrow();
+    if (!membership) {
+      return null;
+    }
+
+    const role = await this.db.getDatabase()
+      .selectFrom('app.organizationMemberRole')
+      .where('organizationMemberRoleId', '=', membership.fkOrganizationMemberRoleOrganizationMemberRoleId)
+      .selectAll()
+      .executeTakeFirstOrThrow();
+
+    return role.role;
+  };
 }
 
 export { OrganizationRepository };

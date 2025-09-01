@@ -142,6 +142,17 @@ class TeamRepository {
         .executeTakeFirstOrThrow();
     return membershipRoleRecord.memberRoleId;
   };
+
+  isTeamNameTakenInOrganization = async (organizationId: string, teamName: string): Promise<boolean> => {
+    const teamRecord = await this.db.getDatabase()
+      .selectFrom('app.team')
+      .innerJoin('app.teamOwnerOrganization', 'app.team.teamId', 'app.teamOwnerOrganization.fkTeamTeamId')
+      .where('app.teamOwnerOrganization.fkOrganizationOrganizationId', '=', organizationId)
+      .where('app.team.name', '=', teamName)
+      .select('app.team.teamId')
+      .executeTakeFirst();
+    return !!teamRecord;
+  };
 }
 
 export { TeamRepository };
