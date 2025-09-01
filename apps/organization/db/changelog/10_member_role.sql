@@ -11,4 +11,5 @@ VALUES ('ADMIN'),
        ('DEVELOPER'),
        ('TRANSLATOR'),
        ('REVIEWER'),
+       ('VIEWER'),
        ('REVOKED');

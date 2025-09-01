@@ -11,4 +11,5 @@ VALUES ('OWNER'),
        ('DEVELOPER'),
        ('TRANSLATOR'),
        ('REVIEWER'),
+       ('VIEWER'),
        ('REVOKED');

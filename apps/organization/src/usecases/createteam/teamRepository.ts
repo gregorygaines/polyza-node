@@ -3,7 +3,6 @@ import { Selectable, Transaction } from 'kysely';
 import { AppTeam, AppTeamMembership, DB } from '../../generated/db/db';
 
 const TeamMembershipRole = {
-  Owner: 'OWNER',
   Admin: 'ADMIN',
   Member: 'MEMBER'
 } as const;
@@ -24,8 +23,8 @@ class TeamRepository {
         this.insertTeamNameHistoryRecord(teamRecord.teamId, teamRecord.name, creatorUserId, tsx),
         this.insertTeamOwnerOrganizationRecord(teamRecord.teamId, ownerOrganizationId, tsx),
         this.insertTeamOwnerOrganizationHistoryRecord(teamRecord.teamId, ownerOrganizationId, creatorUserId, tsx),
-        this.insertTeamMembershipRecord(teamRecord.teamId, creatorUserId, TeamMembershipRole.Owner, tsx),
-        this.insertTeamMembershipHistoryRecord(teamRecord.teamId, creatorUserId, TeamMembershipRole.Owner, creatorUserId, tsx)
+        this.insertTeamMembershipRecord(teamRecord.teamId, creatorUserId, TeamMembershipRole.Admin, tsx),
+        this.insertTeamMembershipHistoryRecord(teamRecord.teamId, creatorUserId, TeamMembershipRole.Admin, creatorUserId, tsx)
       ]);
       return teamRecord;
     });

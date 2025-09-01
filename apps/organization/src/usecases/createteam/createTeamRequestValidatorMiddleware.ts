@@ -11,6 +11,9 @@ export function createTeamRequestValidatorMiddleware(req: Request, res: Response
   if (!createTeamRequest.body.name) {
     throw new Error("The CreateTeamRequest requires an name");
   }
+  if (!createTeamRequest.body.organizationId) {
+    throw new Error("The CreateTeamRequest requires an organizationId");
+  }
 
   next();
 }

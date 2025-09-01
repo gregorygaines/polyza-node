@@ -13,6 +13,7 @@ import {
 import { CreateTeamUseCase, TeamRepository } from './usecases/createteam';
 import { CreateTeamController } from './usecases/createteam/createTeamController';
 import { createTeamRequestValidatorMiddleware } from './usecases/createteam/createTeamRequestValidatorMiddleware';
+require('express-async-errors');
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -44,6 +45,11 @@ app.post('/team',
   createTeamController.handle);
 
 app.use(serviceToApiResponseTransformerMiddleware);
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  res.status(500).json(JSON.stringify(err, Object.getOwnPropertyNames(err)));
+});
 
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);

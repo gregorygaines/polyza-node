@@ -28,10 +28,7 @@ class CreateTeamUseCase {
       throw new Error('Organization does not exist');
     }
 
-    const canUserCreateTeam = await this.canUserCreateTeamInOrganization(req, organization);
-    if (!canUserCreateTeam) {
-      throw new Error('User does not have permission to create a team in this organization');
-    }
+    await this.checkUserCreateTeamInOrganization(req, organization);
 
     const teamNameTaken = await this.teamRepository.isTeamNameTakenInOrganization(req.body.organizationId, req.body.name);
     if (teamNameTaken) {
@@ -60,33 +57,31 @@ class CreateTeamUseCase {
     }
   };
 
-  private canUserCreateTeamInOrganization = async (req: CreateTeamRequest, organization: Selectable<AppOrganization>): Promise<boolean> => {
+  private checkUserCreateTeamInOrganization = async (req: CreateTeamRequest, organization: Selectable<AppOrganization>) => {
     // Check if user has permission to create team in this organization.
     const userInOrganization = await this.organizationRepository.isUserInOrganization(req.headers['x-user-id'], organization.organizationId);
     if (!userInOrganization) {
-      return false;
+      throw new Error('User is not a member of the organization');
     }
 
     // Get the user's role in the organization.
     const userOrganizationMemberRole = await this.organizationRepository.getUserOrganizationMemberRole(req.headers['x-user-id'], organization.organizationId);
     if (!userOrganizationMemberRole) {
-      return false;
+      throw new Error('User does not have a role in the organization, this should never happen');
     }
 
     // Only the owner of the default organization can create teams.
     if (organization.defaultUserOrganization && userOrganizationMemberRole !== 'OWNER') {
-      return false;
+      throw new Error('Only the owner of the default organization can create teams');
     }
 
     // Only admins and owners can create teams.
     if (userOrganizationMemberRole !== 'ADMIN' && userOrganizationMemberRole !== 'OWNER') {
-      return false;
+      throw new Error('Only org admins and owners can create teams');
     }
-
 
     // TODO: Check is if the plan allows for team creation.
     // TODO: Check if the current user doesn't have an outstanding bill or suspended.
-    return true;
   };
 }
 
