@@ -30,7 +30,7 @@ const createOrganizationUseCase = new CreateOrganizationUseCase(organizationRepo
 const createOrganizationController = new CreateOrganizationController(createOrganizationUseCase);
 
 const teamRepository = new TeamRepository(database);
-const createTeamUseCase = new CreateTeamUseCase(teamRepository);
+const createTeamUseCase = new CreateTeamUseCase(teamRepository, organizationRepository);
 const createTeamController = new CreateTeamController(createTeamUseCase);
 
 

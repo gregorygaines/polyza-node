@@ -12,8 +12,8 @@ class OrganizationRepository {
   getNumberOfUserOwnedOrganizations = async (userId: string) => {
     const result = await this.db.getDatabase()
       .selectFrom('app.organization')
-      .where('creator_user_id', '=', userId)
-      .select(db => db.fn.count<number>('organization_id').as('count'))
+      .where('creatorUserId', '=', userId)
+      .select(db => db.fn.count<number>('organizationId').as('count'))
       .executeTakeFirstOrThrow();
     return Number(result.count);
   }
@@ -21,15 +21,15 @@ class OrganizationRepository {
   doesUserHaveADefaultOrganization = async (userId: string) => {
     return await this.db.getDatabase()
       .selectFrom('app.organization')
-      .where('creator_user_id', '=', userId)
-      .where('default_user_organization', '=', true)
+      .where('creatorUserId', '=', userId)
+      .where('defaultUserOrganization', '=', true)
       .executeTakeFirst() !== undefined;
   };
 
-  doesOrganizationSlugExist = async (orgSlug: string) => {
+  doesOrganizationSlugExist = async (slug: string) => {
     return await this.db.getDatabase()
       .selectFrom('app.organization')
-      .where('slug', '=', orgSlug)
+      .where('slug', '=', slug)
       .executeTakeFirst() !== undefined;
   };
 
@@ -37,12 +37,10 @@ class OrganizationRepository {
     return await this.db.getDatabase().transaction().execute(async tsx => {
       const organizationRecord = await this.insertOrganizationRecord(creatorUserId, name, slug, defaultUserOrganization, tsx);
       await Promise.all([
-        this.insertUserAsOrganizationOwner(organizationRecord, tsx).then(orgMembershipRecord => {
-          this.insertOrganizationMembershipHistoryRecord(organizationRecord, orgMembershipRecord, tsx);
-        }),
-        this.insertOrganizationNameHistoryRecord(organizationRecord, name, tsx),
-        this.insertOrganizationSlugHistoryRecord(organizationRecord, slug, tsx),
-        this.insertOrganizationDescriptionHistoryRecord(organizationRecord, tsx)
+        this.insertOrganizationNameHistoryRecord(organizationRecord.organizationId, creatorUserId, name, tsx),
+        this.insertUserAsOrganizationOwner(organizationRecord.organizationId, creatorUserId, tsx),
+        this.insertOrganizationMembershipHistoryRecord(organizationRecord.organizationId, creatorUserId, creatorUserId, tsx),
+        this.insertOrganizationSlugHistoryRecord(organizationRecord.organizationId, creatorUserId, slug, tsx),
       ]);
       return organizationRecord;
     });
@@ -54,134 +52,108 @@ class OrganizationRepository {
     slug: string,
     defaultOrg: boolean,
     tsx: Transaction<DB>,
-  ): Promise<Partial<Selectable<AppOrganization>>> {
+  ): Promise<Selectable<AppOrganization>> {
     return await tsx
       .insertInto('app.organization')
       .values({
-        creator_user_id: creatorUserId,
+        creatorUserId: creatorUserId,
         name: name,
         slug: slug,
-        default_user_organization: defaultOrg
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-  }
-
-  private async insertUserAsOrganizationOwner(
-    organizationRecord: Partial<Selectable<AppOrganization>>,
-    tsx: Transaction<DB>
-  ): Promise<Partial<Selectable<AppOrganizationMembership>>> {
-    const ownerRole = await tsx
-      .selectFrom('app.organization_member_role')
-      .selectAll()
-      .where('role', '=', 'OWNER')
-      .executeTakeFirst();
-    if (!ownerRole) {
-      throw new Error('Owner organization member role not found');
-    }
-
-    if (!organizationRecord.organization_id) {
-      throw new Error('Organization record must have an organization_id');
-    }
-    if (!organizationRecord.creator_user_id) {
-      throw new Error('Organization record must have a creator_user_id');
-    }
-
-    return await tsx
-      .insertInto('app.organization_membership')
-      .values({
-        fk_organization_organization_id: organizationRecord.organization_id,
-        fk_organization_member_role_organization_member_role_id: ownerRole.organization_member_role_id,
-        member_user_id: organizationRecord.creator_user_id
+        defaultUserOrganization: defaultOrg
       })
       .returningAll()
       .executeTakeFirstOrThrow();
   }
 
   private async insertOrganizationNameHistoryRecord(
-    organizationRecord: Partial<Selectable<AppOrganization>>,
-    organizationName: string,
+    organizationId: string,
+    initiatorUserId: string,
+    name: string,
     tsx: Transaction<DB>
   ) {
-    if (!organizationRecord.organization_id) {
-      throw new Error('Organization record must have an organization_id');
-    }
-    if (!organizationRecord.creator_user_id) {
-      throw new Error('Organization record must have a creator_user_id');
-    }
-
     await tsx
-      .insertInto('app.organization_name_history')
+      .insertInto('app.organizationNameHistory')
       .values({
-        fk_organization_organization_id: organizationRecord.organization_id,
-        initiator_user_id: organizationRecord.creator_user_id,
-        name: organizationName
+        fkOrganizationOrganizationId: organizationId,
+        initiatorUserId: initiatorUserId,
+        name: name,
       })
       .execute();
+  }
+
+  private async insertUserAsOrganizationOwner(
+    organizationId: string,
+    memberUserId: string,
+    tsx: Transaction<DB>
+  ): Promise<Partial<Selectable<AppOrganizationMembership>>> {
+    const ownerRoleId = await this.getOwnerRoleId(tsx);
+
+    return await tsx
+      .insertInto('app.organizationMembership')
+      .values({
+        fkOrganizationOrganizationId: organizationId,
+        fkOrganizationMemberRoleOrganizationMemberRoleId: ownerRoleId,
+        memberUserId: memberUserId
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
+  // TODO: Add role parameter
+  private async insertOrganizationMembershipHistoryRecord(
+    organizationId: string,
+    memberUserId: string,
+    initiatorUserId: string,
+    tsx: Transaction<DB>
+  ) {
+    const ownerRoleId = await this.getOwnerRoleId(tsx);
+
+    await tsx
+      .insertInto('app.organizationMembershipHistory')
+      .values({
+        fkOrganizationOrganizationId: organizationId,
+        fkOrganizationMemberRoleOrganizationMemberRoleId: ownerRoleId,
+        memberUserId: memberUserId,
+        initiatorUserId: initiatorUserId,
+      })
+      .execute();
+  }
+
+  private getOwnerRoleId = async (tsx: Transaction<DB>) => {
+    const ownerRole = await tsx
+      .selectFrom('app.organizationMemberRole')
+      .selectAll()
+      .where('role', '=', 'OWNER')
+      .executeTakeFirst();
+    if (!ownerRole) {
+      throw new Error('Owner organization member role not found');
+    }
+    return ownerRole.organizationMemberRoleId;
   }
 
   private async insertOrganizationSlugHistoryRecord(
-    organizationRecord: Partial<Selectable<AppOrganization>>,
-    uniqueOrganizationSlug: string,
+    organizationId: string,
+    initiatorUserId: string,
+    slug: string,
     tsx: Transaction<DB>
   ) {
-    if (!organizationRecord.organization_id) {
-      throw new Error('Organization record must have an organization_id');
-    }
-    if (!organizationRecord.creator_user_id) {
-      throw new Error('Organization record must have a creator_user_id');
-    }
-
     await tsx
-      .insertInto('app.organization_slug_history')
+      .insertInto('app.organizationSlugHistory')
       .values({
-        fk_organization_organization_id: organizationRecord.organization_id,
-        initiator_user_id: organizationRecord.creator_user_id,
-        slug: uniqueOrganizationSlug
+        fkOrganizationOrganizationId: organizationId,
+        initiatorUserId: initiatorUserId,
+        slug: slug
       })
       .execute();
   }
 
-  private async insertOrganizationDescriptionHistoryRecord(
-    organizationRecord: Partial<Selectable<AppOrganization>>,
-    tsx: Transaction<DB>
-  ) {
-    if (!organizationRecord.organization_id) {
-      throw new Error('Organization record must have an organization_id');
-    }
-    if (!organizationRecord.creator_user_id) {
-      throw new Error('Organization record must have a creator_user_id');
-    }
-  }
-
-  private async insertOrganizationMembershipHistoryRecord(
-    organizationRecord: Partial<Selectable<AppOrganization>>,
-    organizationMembershipRecord: Partial<Selectable<AppOrganizationMembership>>,
-    tsx: Transaction<DB>
-  ) {
-    if (!organizationRecord.organization_id) {
-      throw new Error('Organization record must have an organization_id');
-    }
-    if (!organizationRecord.creator_user_id) {
-      throw new Error('Organization record must have a creator_user_id');
-    }
-    if (!organizationMembershipRecord.fk_organization_organization_id) {
-      throw new Error('Organization membership record must have a fk_organization_organization_id');
-    }
-    if (!organizationMembershipRecord.fk_organization_member_role_organization_member_role_id) {
-      throw new Error('Organization membership record must have a fk_organization_member_role_organization_member_role_id');
-    }
-
-    await tsx
-      .insertInto('app.organization_membership_history')
-      .values({
-        fk_organization_organization_id: organizationMembershipRecord.fk_organization_organization_id,
-        fk_organization_member_role_organization_member_role_id: organizationMembershipRecord.fk_organization_member_role_organization_member_role_id,
-        member_user_id: organizationRecord.creator_user_id,
-        initiator_user_id: organizationRecord.creator_user_id
-      })
-      .execute();
-  }
+  getOrganizationById = async (organizationId: string): Promise<Selectable<AppOrganization> | undefined> => {
+    return await this.db.getDatabase()
+      .selectFrom('app.organization')
+      .where('organizationId', '=', organizationId)
+      .selectAll()
+      .executeTakeFirst();
+  };
 }
 
 export { OrganizationRepository };

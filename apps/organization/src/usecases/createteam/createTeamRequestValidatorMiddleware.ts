@@ -8,6 +8,9 @@ export function createTeamRequestValidatorMiddleware(req: Request, res: Response
   if (!createTeamRequest.headers['x-user-id']) {
     throw new Error("The CreateTeamRequest requires a userId");
   }
+  if (!createTeamRequest.body.name) {
+    throw new Error("The CreateTeamRequest requires an name");
+  }
 
   next();
 }
