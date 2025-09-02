@@ -11,7 +11,10 @@ class Database {
       Database.instance = new Kysely<DB>({
         dialect: new PostgresDialect({
           pool: new Pool({
-            connectionString: config.databaseUrl
+            connectionString: config.databaseUrl,
+            idleTimeoutMillis: 30000,
+            max: 5,
+            connectionTimeoutMillis: 10000,
           })
         }),
         plugins: [new CamelCasePlugin()],

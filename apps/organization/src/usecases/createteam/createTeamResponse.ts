@@ -1,4 +1,4 @@
-import { ServiceResponse } from '../../apiTransport';
+import { ServiceResponse } from '@libs/org/lib/express-framework/apiTransport';
 
 interface CreateTeamResponse extends ServiceResponse {
   data: {

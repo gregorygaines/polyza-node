@@ -1,10 +1,6 @@
 import express from 'express';
 import { Database } from './db';
 import {
-  apiToServiceRequestTransformerMiddleware,
-  serviceToApiResponseTransformerMiddleware
-} from './middleware';
-import {
   CreateOrganizationController,
   createOrganizationRequestValidatorMiddleware,
   CreateOrganizationUseCase,
@@ -13,15 +9,6 @@ import {
 import { CreateTeamUseCase, TeamRepository } from './usecases/createteam';
 import { CreateTeamController } from './usecases/createteam/createTeamController';
 import { createTeamRequestValidatorMiddleware } from './usecases/createteam/createTeamRequestValidatorMiddleware';
-require('express-async-errors');
-
-const host = process.env.HOST ?? 'localhost';
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-
-const app = express();
-
-app.use(express.json());
-app.use(apiToServiceRequestTransformerMiddleware);
 
 const database = new Database();
 

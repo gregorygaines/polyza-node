@@ -1,13 +1,10 @@
 {
-  "name": "@org/organization",
+  "name": "@org/user",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "targets": {
       "build": {
-        "dependsOn": [
-          "generate-database-types"
-        ],
         "executor": "@nx/esbuild:esbuild",
         "outputs": [
           "{options.outputPath}"
@@ -15,15 +12,15 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "apps/organization/dist",
+          "outputPath": "apps/user/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "apps/organization/src/main.ts",
-          "tsConfig": "apps/organization/tsconfig.app.json",
+          "main": "apps/user/src/main.ts",
+          "tsConfig": "apps/user/tsconfig.app.json",
           "assets": [
-            "apps/organization/src/assets"
+            "apps/user/src/assets"
           ],
           "esbuildOptions": {
             "sourcemap": true,
@@ -51,8 +48,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/apps/organization/dist/package.json",
-          "{workspaceRoot}/apps/organization/dist/package-lock.json"
+          "{workspaceRoot}/apps/user/dist/package.json",
+          "{workspaceRoot}/apps/user/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -64,7 +61,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/apps/organization/dist/workspace_modules"
+          "{workspaceRoot}/apps/user/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -86,15 +83,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@org/organization:build",
+          "buildTarget": "@org/user:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@org/organization:build:development"
+            "buildTarget": "@org/user:build:development"
           },
           "production": {
-            "buildTarget": "@org/organization:build:production"
+            "buildTarget": "@org/user:build:production"
           }
         }
       },
@@ -102,28 +99,10 @@
         "options": {
           "passWithNoTests": true
         }
-      },
-      "generate-database-types": {
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "kysely-codegen --camel-case --out-file src/generated/db/db.d.ts",
-          "cwd": "{projectRoot}"
-        }
       }
-    },
-    "implicitDependencies": ["@libs/org"]
+    }
   },
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "es6-shim": "^0.35.8",
-    "express": "^4.21.2",
-    "kysely": "^0.28.5",
-    "pg": "^8.16.3",
-    "reflect-metadata": "^0.2.2",
-    "slugify": "^1.6.6"
-  },
-  "devDependencies": {
-    "@types/pg": "^8.15.5",
-    "kysely-codegen": "^0.18.5"
+    "express": "^4.21.2"
   }
 }

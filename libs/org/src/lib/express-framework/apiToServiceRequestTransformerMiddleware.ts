@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { ExpressRequestWithApiRequest } from '../apiTransport';
+import { ExpressRequestWithApiRequest } from './apiTransport';
 
 export function apiToServiceRequestTransformerMiddleware(req: Request, res: Response, next: NextFunction) {
   (req as ExpressRequestWithApiRequest).apiRequest = {

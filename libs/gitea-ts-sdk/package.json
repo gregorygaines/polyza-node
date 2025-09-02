@@ -1,5 +1,5 @@
 {
-  "name": "@org/gitea-ts-sdk",
+  "name": "@libs/gitea-ts-sdk",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",

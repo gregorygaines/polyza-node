@@ -14,6 +14,15 @@
     },
     {
       "path": "./libs/gitea-ts-sdk"
+    },
+    {
+      "path": "./apps/user-e2e"
+    },
+    {
+      "path": "./apps/user"
+    },
+    {
+      "path": "./libs/org"
     }
   ]
 }

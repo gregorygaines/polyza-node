@@ -42,7 +42,11 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/org-e2e/**/*", "apps/organization-e2e/**/*"]
+      "exclude": [
+        "apps/org-e2e/**/*",
+        "apps/organization-e2e/**/*",
+        "apps/user-e2e/**/*"
+      ]
     },
     {
       "plugin": "@nx/docker",
